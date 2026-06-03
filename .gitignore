@@ -1,0 +1,25 @@
+# Python cache and build outputs
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment variables and secrets
+.env
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+
+# Local data generated later by PDF parsing or vector storage
+data/
+chroma_db/
+uploads/
+reports/
