@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from backend.app.services.document_loader import load_pdf_text, extract_pdf_text
 from backend.app.services.paper_service import save_uploaded_pdf
 from backend.app.services.text_splitter import split_text
-
+from backend.app.services.vector_store import add_chunks_to_vector_store
 router = APIRouter(prefix="/papers", tags=["papers"])
 
 class ParsePaperRequest(BaseModel):
@@ -17,6 +17,15 @@ class ChunkPaperRequest(BaseModel):
     file_path: str
     chunk_size: int = 800
     chunk_overlap: int = 100
+
+class IndexPaperRequest(BaseModel):
+    """论文入库请求参数。"""
+
+    file_path: str
+    collection_name: str = "papers"
+    chunk_size: int = 800
+    chunk_overlap: int = 100
+
 
 @router.post("/upload")
 async def upload_paper(paper_file: UploadFile = File(...)):
@@ -52,4 +61,30 @@ def chunk_paper(request: ChunkPaperRequest):
         "chunk_overlap": request.chunk_overlap,
         "chunk_count": len(chunks),
         "preview_chunks": chunks[:3],
+    }
+
+@router.post("/index")
+def index_paper(request: IndexPaperRequest):
+    """
+    将 PDF 文本切分后写入 ChromaDB。
+    这是 RAG 的入库阶段。
+    """
+    text = extract_pdf_text(request.file_path)
+
+    chunks = split_text(
+        text=text,
+        chunk_size=request.chunk_size,
+        chunk_overlap=request.chunk_overlap,
+    )
+
+    result = add_chunks_to_vector_store(
+        chunks=chunks,
+        source_file=request.file_path,
+        collection_name=request.collection_name,
+    )
+
+    return {
+        **result,
+        "chunk_size": request.chunk_size,
+        "chunk_overlap": request.chunk_overlap,
     }
