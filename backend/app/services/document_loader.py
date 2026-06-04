@@ -41,4 +41,13 @@ def load_pdf_text(file_path:str)->dict:
         "text_page_count": len(page_texts),
         "char_count": len(full_text),
         "preview": full_text[:500],
+        "full_text": full_text,
     }
+
+def extract_pdf_text(file_path: str) -> str:
+    """
+    提取 PDF 完整文本。
+    后续 chunk、embedding、RAG 都会复用这个函数。
+    """
+    result = load_pdf_text(file_path)
+    return result["full_text"]
