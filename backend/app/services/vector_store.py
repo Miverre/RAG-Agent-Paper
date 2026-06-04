@@ -58,3 +58,43 @@ def add_chunks_to_vector_store(
         "added_count": len(chunks),
         "source_file": source_file,
     }
+
+def search_similar_chunks(
+    query: str,
+    collection_name: str = "papers",
+    top_k: int = 3,
+) -> dict:
+    """
+    根据用户问题，从 ChromaDB 中检索最相关的 chunks。
+    """
+    if not query.strip():
+        raise ValueError("query 不能为空")
+
+    collection = get_paper_collection(collection_name)
+
+    results = collection.query(
+        query_texts=[query],
+        n_results=top_k,
+    )
+
+    documents = results.get("documents", [[]])[0]
+    metadatas = results.get("metadatas", [[]])[0]
+    distances = results.get("distances", [[]])[0]
+
+    matches = []
+
+    for index, document in enumerate(documents):
+        matches.append(
+            {
+                "content": document,
+                "metadata": metadatas[index] if index < len(metadatas) else {},
+                "distance": distances[index] if index < len(distances) else None,
+            }
+        )
+
+    return {
+        "query": query,
+        "collection_name": collection_name,
+        "top_k": top_k,
+        "matches": matches,
+    }

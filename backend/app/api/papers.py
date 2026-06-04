@@ -4,6 +4,7 @@ from backend.app.services.document_loader import load_pdf_text, extract_pdf_text
 from backend.app.services.paper_service import save_uploaded_pdf
 from backend.app.services.text_splitter import split_text
 from backend.app.services.vector_store import add_chunks_to_vector_store
+from backend.app.services.vector_store import add_chunks_to_vector_store,search_similar_chunks
 router = APIRouter(prefix="/papers", tags=["papers"])
 
 class ParsePaperRequest(BaseModel):
@@ -26,6 +27,12 @@ class IndexPaperRequest(BaseModel):
     chunk_size: int = 800
     chunk_overlap: int = 100
 
+class SearchPaperRequest(BaseModel):
+    """RAG 检索请求参数。"""
+
+    query: str
+    collection_name: str = "papers"
+    top_k: int = 3
 
 @router.post("/upload")
 async def upload_paper(paper_file: UploadFile = File(...)):
@@ -88,3 +95,15 @@ def index_paper(request: IndexPaperRequest):
         "chunk_size": request.chunk_size,
         "chunk_overlap": request.chunk_overlap,
     }
+
+@router.post("/search")
+def search_paper(request: SearchPaperRequest):
+    """
+    从 ChromaDB 中检索和问题最相关的论文片段。
+    这里只做检索，不调用大模型。
+    """
+    return search_similar_chunks(
+        query=request.query,
+        collection_name=request.collection_name,
+        top_k=request.top_k,
+    )
