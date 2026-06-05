@@ -8,7 +8,7 @@ dist/
 # Virtual environments
 .venv/
 venv/
-env/
+.env/
 
 # Environment variables and secrets
 .env

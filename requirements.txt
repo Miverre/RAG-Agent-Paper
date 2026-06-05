@@ -1,5 +1,9 @@
-
+python-multipart
+pypdf
+chromadb
+sentence-transformers
 fastapi==0.136.3
 uvicorn
 python-dotenv
-python-multipart
+langchain
+langchain-openai

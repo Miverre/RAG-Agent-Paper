@@ -1,7 +1,6 @@
-from fastapi import FastAPI,File,HTTPException,UploadFile
-from uuid import UUID
-from pathlib import Path
+from fastapi import FastAPI
 from backend.app.api import papers
+from backend.app.api import llm
 # 创建 FastAPI 应用实例
 # title 和 version 会显示在自动生成的接口文档里
 app=FastAPI(
@@ -9,6 +8,7 @@ app=FastAPI(
     version="0.1.0",
 )
 app.include_router(papers.router)
+app.include_router(llm.router)
 @app.get("/")
 def read_root():
     """
