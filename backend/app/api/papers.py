@@ -5,7 +5,15 @@ from backend.app.services.paper_service import save_uploaded_pdf
 from backend.app.services.text_splitter import split_text
 from backend.app.services.vector_store import add_chunks_to_vector_store
 from backend.app.services.vector_store import add_chunks_to_vector_store,search_similar_chunks
+from backend.app.services.rag_service import ask_paper_with_rag
 router = APIRouter(prefix="/papers", tags=["papers"])
+
+class AskPaperRequest(BaseModel):
+    """论文 RAG 问答请求参数。"""
+
+    question: str
+    collection_name: str = "papers"
+    top_k: int = 3
 
 class ParsePaperRequest(BaseModel):
     """解析 PDF 的请求参数。"""
@@ -104,6 +112,17 @@ def search_paper(request: SearchPaperRequest):
     """
     return search_similar_chunks(
         query=request.query,
+        collection_name=request.collection_name,
+        top_k=request.top_k,
+    )
+
+@router.post("/ask")
+def ask_paper(request: AskPaperRequest):
+    """
+    基于已入库论文进行 RAG 问答。
+    """
+    return ask_paper_with_rag(
+        question=request.question,
         collection_name=request.collection_name,
         top_k=request.top_k,
     )
