@@ -6,7 +6,15 @@ from backend.app.services.text_splitter import split_text
 from backend.app.services.vector_store import add_chunks_to_vector_store
 from backend.app.services.vector_store import add_chunks_to_vector_store,search_similar_chunks
 from backend.app.services.rag_service import ask_paper_with_rag
+from backend.app.services.report_service import generate_paper_report
 router = APIRouter(prefix="/papers", tags=["papers"])
+
+class ReportPaperRequest(BaseModel):
+    """论文分析报告请求参数。"""
+
+    topic: str
+    collection_name: str = "papers"
+    top_k: int = 6
 
 class AskPaperRequest(BaseModel):
     """论文 RAG 问答请求参数。"""
@@ -41,6 +49,13 @@ class SearchPaperRequest(BaseModel):
     query: str
     collection_name: str = "papers"
     top_k: int = 3
+
+class ReportPaperRequest(BaseModel):
+    """论文分析报告请求参数。"""
+
+    topic: str
+    collection_name: str = "papers"
+    top_k: int = 6
 
 @router.post("/upload")
 async def upload_paper(paper_file: UploadFile = File(...)):
@@ -123,6 +138,17 @@ def ask_paper(request: AskPaperRequest):
     """
     return ask_paper_with_rag(
         question=request.question,
+        collection_name=request.collection_name,
+        top_k=request.top_k,
+    )
+
+@router.post("/report")
+def create_paper_report(request: ReportPaperRequest):
+    """
+    基于已入库论文生成 Markdown 分析报告。
+    """
+    return generate_paper_report(
+        topic=request.topic,
         collection_name=request.collection_name,
         top_k=request.top_k,
     )
